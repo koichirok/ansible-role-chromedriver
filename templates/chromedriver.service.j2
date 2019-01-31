@@ -1,0 +1,14 @@
+[Unit]
+SourcePath=/etc/sysconfig/chromedriver
+Description=Standalone ChromeDriver
+After=network.target
+
+[Service]
+Type=simple
+User={{ chromedriver_service_user | default(ansible_user_uid) }}
+Group={{ chromedriver_service_group | default(ansible_user_gid) }}
+ExecStart={{ chromedriver_install_prefix }}/bin/chromedriver
+PrivateTmp=ture
+
+[Install]
+WantedBy=multi-user.target

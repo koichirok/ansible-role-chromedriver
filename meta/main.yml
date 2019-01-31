@@ -1,0 +1,18 @@
+galaxy_info:
+  role_name: chromedriver
+  author: KIKUCHi Koichiro
+  description: ansible role to install ChromeDriver
+  company: your company (optional)
+  license: BSD
+
+  min_ansible_version: 2.4
+
+  platforms:
+  - name: GenericLinux
+    versions:
+    - all
+
+  galaxy_tags: []
+
+dependencies:
+- koichirok.google_chrome

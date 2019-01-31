@@ -1,0 +1,59 @@
+---
+- name: Check supported architecture or not
+  fail:
+    msg: 'Only 64bit Linux is supported'
+  when: 'ansible_userspace_bits != "64"'
+
+- name: Ensure unzip is installed
+  package:
+    name: unzip
+
+- name: Get chromedriver version
+  command: '{{ chromedriver_install_prefix }}/bin/chromedriver --version'
+  register: chromedriver_version_installed
+  changed_when: false
+  failed_when: false
+
+- name: Get latest chromedriver version
+  when: chromedriver_version is not defined
+  block:
+    - uri:
+        url: https://chromedriver.storage.googleapis.com/LATEST_RELEASE
+        return_content: yes
+      register: chromedriver_latest
+      changed_when: false
+      failed_when: false
+
+    - set_fact:
+        chromedriver_version: '{{ chromedriver_latest.content }}'
+
+- name: Ensure install directory exists
+  file:
+    path: '{{ chromedriver_install_prefix }}/bin'
+    state: directory
+
+- name: Install ChromeDriver
+  unarchive:
+    src: "https://chromedriver.storage.googleapis.com/{{chromedriver_version}}/chromedriver_linux64.zip"
+    dest: '{{ chromedriver_install_prefix }}/bin'
+    mode: 0755
+    copy: no
+  when:  >
+    chromedriver_version_installed.rc != 0 or 
+      "ChromeDriver %s"|format(chromedriver_version) not in chromedriver_version_installed.stdout
+
+- name: Install service file
+  template:
+    src: chromedriver.service.j2
+    dest: /usr/lib/systemd/system/chromedriver.service
+  when:
+    - ansible_service_mgr == "systemd"
+    - chromedriver_install_as_service
+
+- name: start chromedriver 
+  service:
+    name: chromedriver
+    state: '{{ chromedriver_service_state | default(omit) }}'
+    state: '{{ chromedriver_service_enabled | default(omit) }}'
+  when: >
+    chromedriver_service_state is defined or chromedriver_service_enabled is defined
