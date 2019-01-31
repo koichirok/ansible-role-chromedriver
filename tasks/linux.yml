@@ -7,6 +7,9 @@
 - name: Ensure unzip is installed
   package:
     name: unzip
+  retries: 5
+  until: r is success
+  register: r
 
 - name: Get chromedriver version
   command: '{{ chromedriver_install_prefix }}/bin/chromedriver --version'
@@ -17,14 +20,16 @@
 - name: Get latest chromedriver version
   when: chromedriver_version is not defined
   block:
-    - uri:
+    - name: Get latest chromedriver's information
+      uri:
         url: https://chromedriver.storage.googleapis.com/LATEST_RELEASE
         return_content: yes
       register: chromedriver_latest
       changed_when: false
       failed_when: false
 
-    - set_fact:
+    - name: Set latest chromedriver's version as chromedriver_version fact
+      set_fact:
         chromedriver_version: '{{ chromedriver_latest.content }}'
 
 - name: Ensure install directory exists
@@ -34,12 +39,12 @@
 
 - name: Install ChromeDriver
   unarchive:
-    src: "https://chromedriver.storage.googleapis.com/{{chromedriver_version}}/chromedriver_linux64.zip"
+    src: "https://chromedriver.storage.googleapis.com/{{ chromedriver_version }}/chromedriver_linux64.zip"
     dest: '{{ chromedriver_install_prefix }}/bin'
     mode: 0755
     copy: no
   when:  >
-    chromedriver_version_installed.rc != 0 or 
+    chromedriver_version_installed.rc != 0 or
       "ChromeDriver %s"|format(chromedriver_version) not in chromedriver_version_installed.stdout
 
 - name: Install service file
@@ -50,10 +55,14 @@
     - ansible_service_mgr == "systemd"
     - chromedriver_install_as_service
 
-- name: start chromedriver 
+- name: Ensure chromedriver service is configured according to chromedriver_service_state variable
   service:
     name: chromedriver
-    state: '{{ chromedriver_service_state | default(omit) }}'
-    state: '{{ chromedriver_service_enabled | default(omit) }}'
-  when: >
-    chromedriver_service_state is defined or chromedriver_service_enabled is defined
+    state: '{{ chromedriver_service_state  }}'
+  when: chromedriver_service_state is defined
+
+- name: Ensure chromedriver service is configured according to chromedriver_service_enabled variable
+  service:
+    name: chromedriver
+    enabled: '{{ chromedriver_service_enabled }}'
+  when: chromedriver_service_enabled is defined
