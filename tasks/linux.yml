@@ -54,6 +54,7 @@
   when:
     - ansible_service_mgr == "systemd"
     - chromedriver_install_as_service
+  notify: reload service file
 
 - name: Ensure chromedriver service is configured according to chromedriver_service_state variable
   service:

@@ -5,8 +5,8 @@ After=network.target
 
 [Service]
 Type=simple
-User={{ chromedriver_service_user | default(ansible_user_uid) }}
-Group={{ chromedriver_service_group | default(ansible_user_gid) }}
+User={{ chromedriver_service_user | default('daemonan') }}
+Group={{ chromedriver_service_group | default('daemon') }}
 ExecStart={{ chromedriver_install_prefix }}/bin/chromedriver
 PrivateTmp=ture
 

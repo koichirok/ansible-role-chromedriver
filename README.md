@@ -14,8 +14,8 @@ chromedriver\_install\_prefix| /opt/google/chromedriver | The path where the chr
 chromedriver\_install\_as\_service | `false` | TBD |
 chromedriver\_service\_state| not defined | TBD |
 chromedriver\_service\_enabled| not defined | TBD |
-chromedriver\_service\_user| ansible\_user\_uid | TBD |
-chromedriver\_service\_group| ansible\_user\_gid | TBD |
+chromedriver\_service\_user| `daemon` | TBD |
+chromedriver\_service\_group| `daemon` | TBD |
 
 Dependencies
 ------------

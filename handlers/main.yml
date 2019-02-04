@@ -1,0 +1,5 @@
+---
+# handlers file for chromedriver
+- name: reload service file
+  systemd:
+    daemon_reload: yes
